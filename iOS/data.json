@@ -1,0 +1,13 @@
+{
+    "cotacoes": [
+        { "name": "BalaJuquinha", "value": "0.0392156862745098", "fieldId": "valueBalaJ", "text": "Balas Juquinha" },
+        { "name": "BalaBolete", "value": "0.035", "fieldId": "valueBalaBolete", "text": "Balas Bolete" },
+        { "name": "Bala7Belo", "value": "0.0564285714285714", "fieldId": "valueBala7Belo", "text": "Balas 7 Belo" },
+        { "name": "PacocaRetangular", "value": "0.317", "fieldId": "valuePacRet", "text": "Paçoquitas" },
+        { "name": "BombomSerenata", "value": "0.438", "fieldId": "valueBombomSerenata", "text": "Bombons Serenata de Amor" },
+        { "name": "Grapette", "value": "2.295", "fieldId": "valueGrapette", "text": "Litros de Grapette" },
+        { "name": "KinderOvo", "value": "5.02", "fieldId": "valueKinder", "text": "Kinder Ovos" },
+        { "name": "BaconFat", "value": "1.2128", "fieldId": "valueBaconFat", "text": "Fatias de Bacon" },
+        { "name": "AcoesPetrobras", "fieldId": "valuePetr", "text": "Ações da Petrobras", "jsonAddress": "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quote%20where%20symbol%20in%20(%22PETR4.SA%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=", "jsonValuePath": "query.results.quote.LastTradePriceOnly" }
+    ]
+}

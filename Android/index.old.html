@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.8.3/angular-material.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
+        
+        <meta name="viewport" content="initial-scale=1" />
+		
+		<title>Cota&ccedil;&atilde;o do dolar em &pi;</title>
+	
+        <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-animate.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-aria.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.8.3/angular-material.min.js"></script>
+    
+	    <script type="text/javascript">		
+			var url = "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.xchange%20where%20pair%20in%20(%22USDBRL%22%2C%22EURBRL%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
+            var UsdBrl = 0;            
+            var EurBrl = 0;   
+            var casaDec = 4;
+            
+            function UpdateAll()
+            {
+                $.getJSON("data.json").done(
+                    function(data) {
+                        $(data.cotacoes).each(
+                            function(i,v){
+                                var value = 0;
+                                if(typeof v.jsonAddress != 'undefined') {
+                                    value = GetJsonValue(v.jsonAddress, v.jsonValuePath, v.fieldId, v.text);                                       
+                                }
+                                else{
+                                    value = UsdBrl/v.value; 
+                                    CreateOrUpdateField(v.fieldId, v.text, value);
+                                }                                
+                            });
+                    });
+            }
+            
+            function UpdateCotacao() {
+                $.getJSON(url).done(
+                function( data ) {
+                    SetCotacaoUSD(data.query.results.rate[0].Rate);
+                    SetCotacaoEUR(data.query.results.rate[1].Rate);
+                    SetCotacaoUsdPi();
+                    UpdateAll();
+                });
+            }
+            
+            function GetJsonValue(addr, field, fieldId, text) {
+                $.getJSON(addr).done(
+                function( data ) {
+                    var value=GetByString(data, field);
+                    value = UsdBrl/value;
+                    CreateOrUpdateField(fieldId, text, value);
+                });                
+            }
+            
+            function CreateOrUpdateField(fieldId, text, value) {
+                if($("#"+fieldId).length == 0) CreateField(fieldId, text);
+                UpdateField(fieldId,value);
+            }
+            
+            function CreateField(id, text) {
+				var fieldText = '<li class="item-content">'
+									+'<div class="item-inner">'
+										+'<div class="item-title">'
+											+'<input type="text" class="form-control" id="'+id+'" readonly>'
+										+'</div>'
+										+'<div class="item-after">'
+											+text
+										+'</div>'
+									+'</div>'
+								+'</li>';
+				
+				$('#cotacoesList').append($(fieldText));
+            }
+           
+            function GetByString(o, s) {
+                s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+                s = s.replace(/^\./, '');           // strip a leading dot
+                var a = s.split('.');
+                for (var i = 0, n = a.length; i < n; ++i) {
+                    var m = a[i];
+                    if (m in o) {
+                        o = o[m];
+                    } else {
+                        return;
+                    }
+                }
+                return o;
+            }                    
+            
+            function SetCotacaoUSD(valor) {
+                UsdBrl = valor;
+                UpdateFieldNoRound('valueUsd', valor);
+            }
+            function SetCotacaoEUR(valor) {
+                EurBrl = valor;
+            }
+            
+            function SetCotacaoUsdPi() {
+                var UsdBrlPi = UsdBrl/Math.PI;
+                UpdateField('valueUsdPi', UsdBrlPi);
+            }        
+            
+            function SetCotacaoEurPi() {
+                var EurBrlPi = EurBrl/Math.PI;
+                UpdateField('valueEurPi', EurBrlPi);
+            }  
+                 
+            function UpdateField(id, value) {
+                $('#'+id).val(value.toFixed(casaDec));
+            }
+            function UpdateFieldNoRound(id, value) {
+                $('#'+id).val(value);
+            }
+            
+            $(document).ready(function() {                
+                UpdateCotacao();
+                
+                window.setInterval(function() {
+                    UpdateCotacao();              
+                },60000);
+            });
+            
+        </script>
+        <!--GoogleAnalytics-->
+		<script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-60705786-1', 'auto');
+          ga('send', 'pageview');
+
+        </script>
+	</head>
+	<body layout="column" ng-controller="AppCtrl">
+    <md-toolbar layout="row">
+      <button ng-click="toggleSidenav('left')" hide-gt-sm class="menuBtn">
+        <span class="visually-hidden">Menu</span>
+      </button>
+      <h1 class="md-toolbar-tools" layout-align-gt-sm="center">Hello World</h1>
+    </md-toolbar>
+    <div layout="row" flex>
+        <md-sidenav layout="column" class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-sm')">
+          
+        </md-sidenav>
+        <div layout="column" flex id="content">
+            <md-content layout="column" flex class="md-padding">
+
+            </md-content>
+        </div>
+    </div>
+		<!-- Status bar overlay for full screen mode (PhoneGap) -->
+		<div class="statusbar-overlay"></div>
+		<!-- Panels overlay-->
+		<div class="panel-overlay"></div>
+		<!-- Left panel with reveal effect-->
+		<div class="panel panel-left panel-reveal">
+		  <div class="content-block">
+			<p>Left panel content goes here</p>
+		  </div>
+		</div>
+		<div class="panel panel-right panel-cover">
+		    <div class="content-block">
+				<div class="text-center">
+					<a href="https://www.yahoo.com/?ilc=401" target="_blank"> <img src="https://poweredby.yahoo.com/white.png" width="134" height="29"/> </a>
+					<br />
+					<a href="http://aws.amazon.com/what-is-cloud-computing"><img src="http://awsmedia.s3.amazonaws.com/AWS_logo_poweredby_black_127px.png" alt="Powered by AWS Cloud Computing"></a>
+				</div>
+		    </div>
+		</div>
+		<!-- Views -->
+		<div class="views">
+		  <!-- Your main view, should have "view-main" class -->
+		  <div class="view view-main" data-page="index">
+			<!-- Top Navbar-->
+			<div class="navbar">
+			    <div class="navbar-inner navbar-on-center">
+				<!-- We need cool sliding animation on title element, so we have additional "sliding" class -->
+					<div class="center sliding">Cota&ccedil;&atilde;o do Dolar</div>
+					<div class="right"><a href="#" class="link icon-only open-panel"> <i class="icon icon-bars"></i></a></div>
+				</div>
+			</div>
+			<!-- Pages container, because we use fixed-through navbar and toolbar, it has additional appropriate classes-->
+			<div class="pages navbar-through toolbar-through">
+			  <!-- Page, "data-page" contains page name -->
+			  <div data-page="index" class="page">
+				<!-- Scrollable page content -->
+				<div class="page-content">
+					<div class="content-block-title">
+						Cota&ccedil;&atilde;o
+					</div>
+						<div class="list-block">
+							<ul id="cotacoesList">
+								<li class="item-content">
+									<div class="item-inner">
+										<div class="item-title">
+											<input type="text" class="form-control" id="valueUsd" readonly>
+										</div>
+										<div class="item-after">
+											BRL
+										</div>
+									</div>
+								</li>
+								<li class="item-content">
+									<div class="item-inner">
+										<div class="item-title">
+											<input type="text" class="form-control" id="valueUsdPi" readonly>
+										</div>
+										<div class="item-after">
+											&pi;
+										</div>
+									</div>
+								</li>
+							</ul>
+						</div>
+					
+				</div>
+			  </div>
+			</div>
+			<!-- Bottom Toolbar-->
+			<div class="toolbar">
+			  <div class="toolbar-inner">
+				<!-- Toolbar links -->
+				<a href="#" class="link">Link 1</a>
+				<a href="#" class="button open-panel" data-panel="right">Sobre</a>
+			  </div>
+			</div>
+		  </div>
+		</div>		
+	</body>
+</html>
